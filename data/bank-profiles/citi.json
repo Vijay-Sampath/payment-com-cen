@@ -1,0 +1,54 @@
+{
+  "id": "citi",
+  "name": "Citibank",
+  "shortName": "Citi",
+  "bicFamily": ["CITIUS33", "CITIGB2L", "CITISGSG"],
+  "platformName": "TTS / CitiDirect",
+  "cobolSystemAlias": "FLEXCUBE 11 (COBOL)",
+  "riskPosture": "Moderate",
+  "primaryCorridors": [
+    {
+      "from": "US", "to": "HK", "fromCity": "New York", "toCity": "Hong Kong",
+      "fromCoords": [40.7128, -74.006], "toCoords": [22.3193, 114.1694],
+      "currency": "USD/HKD", "volume": "$3.1B daily", "status": "healthy"
+    },
+    {
+      "from": "US", "to": "GB", "fromCity": "New York", "toCity": "London",
+      "fromCoords": [40.7128, -74.006], "toCoords": [51.5074, -0.1278],
+      "currency": "USD/GBP", "volume": "$2.7B daily", "status": "healthy"
+    },
+    {
+      "from": "GB", "to": "SG", "fromCity": "London", "toCity": "Singapore",
+      "fromCoords": [51.5074, -0.1278], "toCoords": [1.3521, 103.8198],
+      "currency": "GBP/SGD", "volume": "$1.2B daily", "status": "healthy"
+    },
+    {
+      "from": "HK", "to": "JP", "fromCity": "Hong Kong", "toCity": "Tokyo",
+      "fromCoords": [22.3193, 114.1694], "toCoords": [35.6762, 139.6503],
+      "currency": "HKD/JPY", "volume": "$890M daily", "status": "healthy"
+    }
+  ],
+  "clients": [
+    {
+      "name": "Shell Energy Trading",
+      "type": "Fortune 500",
+      "industry": "Energy Trading",
+      "avgDailyVolume": "$780M"
+    },
+    {
+      "name": "Procter & Gamble Treasury",
+      "type": "Fortune 500",
+      "industry": "Consumer Goods",
+      "avgDailyVolume": "$1.2B"
+    },
+    {
+      "name": "SoftBank FX",
+      "type": "Global Conglomerate",
+      "industry": "Technology & Telecom",
+      "avgDailyVolume": "$290M"
+    }
+  ],
+  "theme": {
+    "accent": "#003DA5"
+  }
+}

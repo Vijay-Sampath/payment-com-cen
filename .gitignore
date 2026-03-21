@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Next.js build
+.next/
+out/
+
+# Testing
+test-results/
+playwright-report/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Large generated data files (regenerate via scripts/generate_data.py)
+data/raw/service_logs.json
+data/raw/trace_spans.json
+
+# Misc
+*.tsbuildinfo
+next-env.d.ts

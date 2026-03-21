@@ -1,0 +1,198 @@
+[
+  {
+    "step_id": "detect",
+    "step_number": 1,
+    "agent_name": "Sentinel Agent",
+    "agent_icon": "🛡️",
+    "input_summary": "Real-time payment flow telemetry across all active corridors",
+    "finding_summary": "Anomalous failure pattern detected: 47 payment timeouts in 90 seconds across US→GB, US→JP, US→SG corridors. Failure rate jumped from 0.1% to 34.2%. Pattern signature: cascading timeout with exponential queue growth.",
+    "confidence_score": 96,
+    "handoff_target": "Correlator Agent",
+    "evidence_refs": ["EVT-2847", "EVT-2848", "EVT-2851", "METRIC-P99-LAT-001"],
+    "duration_ms": 1200,
+    "status": "completed",
+    "narrative": "I detected a multi-corridor anomaly at 14:23 UTC. The payment failure rate surged from baseline 0.1% to 34.2% within 90 seconds — well beyond normal variance. Three corridors are simultaneously affected, which rules out a single-point network issue. The pattern fingerprint matches a cascading upstream service failure. Escalating to Correlator Agent for root cause analysis.",
+    "staticNarrative": "I detected a multi-corridor anomaly at 14:23 UTC. The payment failure rate surged from baseline 0.1% to 34.2% within 90 seconds — well beyond normal variance. Three corridors are simultaneously affected, which rules out a single-point network issue. The pattern fingerprint matches a cascading upstream service failure. Escalating to Correlator Agent for root cause analysis.",
+    "businessSignal": "Multi-corridor payment anomaly detected — failure rate surged 340x in 90 seconds",
+    "scoreboardDelta": {
+      "valueAtRisk": 40,
+      "paymentsStuck": 200,
+      "slaBreach": 41
+    },
+    "triggersHITL": false
+  },
+  {
+    "step_id": "correlate",
+    "step_number": 2,
+    "agent_name": "Correlator Agent",
+    "agent_icon": "🔗",
+    "input_summary": "47 failed payment events + infrastructure telemetry from Sentinel",
+    "finding_summary": "Root cause: Sanctions screening microservice p99 latency at 14.2s (SLA: 3s). The legacy COBOL adapter interprets timeouts as soft failures and retries 3x per message, creating a feedback loop that amplifies queue depth 4x.",
+    "confidence_score": 94,
+    "handoff_target": "Log Intelligence Agent",
+    "evidence_refs": ["TRACE-9921", "TRACE-9922", "SVC-SANCTIONS-LAT", "MQ-DEPTH-001"],
+    "duration_ms": 1800,
+    "status": "completed",
+    "narrative": "Cross-referencing payment failure traces with infrastructure metrics reveals the root cause chain: the sanctions screening service hit a latency spike (14.2s p99), likely due to a stale connection pool or upstream dependency. The critical amplifier is the legacy COBOL bridge — it treats timeouts as retryable errors and creates 3 additional messages per failure, turning a linear problem into exponential queue growth.",
+    "staticNarrative": "Cross-referencing payment failure traces with infrastructure metrics reveals the root cause chain: the sanctions screening service hit a latency spike (14.2s p99), likely due to a stale connection pool or upstream dependency. The critical amplifier is the legacy COBOL bridge — it treats timeouts as retryable errors and creates 3 additional messages per failure, turning a linear problem into exponential queue growth.",
+    "businessSignal": "Root cause isolated — sanctions service latency spike amplified by legacy adapter retry storm",
+    "scoreboardDelta": {
+      "valueAtRisk": 90,
+      "paymentsStuck": 500,
+      "slaBreach": 39
+    },
+    "triggersHITL": false
+  },
+  {
+    "step_id": "cluster",
+    "step_number": 3,
+    "agent_name": "Log Intelligence Agent",
+    "agent_icon": "📊",
+    "input_summary": "2,847 log entries from payment gateway, sanctions service, and MQ broker",
+    "finding_summary": "Semantic clustering identified 4 distinct log clusters: (1) Sanctions timeout errors (38%), (2) Legacy adapter retry noise (41%), (3) Queue overflow warnings (15%), (4) FX rate refresh failures (6% — secondary symptom).",
+    "confidence_score": 91,
+    "handoff_target": "Impact Agent",
+    "evidence_refs": ["LOG-CLU-A", "LOG-CLU-B", "LOG-CLU-C", "LOG-CLU-D"],
+    "duration_ms": 2100,
+    "status": "completed",
+    "narrative": "I processed 2,847 log entries using semantic clustering. The dominant signal is sanctions timeout errors (38%) amplified by legacy adapter retries (41%). The retry noise is masking the real problem — in a traditional SOC, analysts would spend hours filtering retry logs before reaching the sanctions root cause. I've also flagged a secondary FX rate refresh failure (6%) that appeared as a downstream consequence.",
+    "staticNarrative": "I processed 2,847 log entries using semantic clustering. The dominant signal is sanctions timeout errors (38%) amplified by legacy adapter retries (41%). The retry noise is masking the real problem — in a traditional SOC, analysts would spend hours filtering retry logs before reaching the sanctions root cause. I've also flagged a secondary FX rate refresh failure (6%) that appeared as a downstream consequence.",
+    "businessSignal": "Log noise separated from signal — 41% of alerts are retry artifacts, not new failures",
+    "scoreboardDelta": {
+      "paymentsStuck": 1247,
+      "slaBreach": 37
+    },
+    "triggersHITL": false
+  },
+  {
+    "step_id": "impact",
+    "step_number": 4,
+    "agent_name": "Impact Agent",
+    "agent_icon": "💰",
+    "input_summary": "Clustered log patterns + active payment records from affected corridors",
+    "finding_summary": "Affected cohort: 142 payments across 3 corporate clients. Siemens AG Treasury: 67 payments ($412M). Rio Tinto Commodities: 48 payments ($298M). Merck FX Desk: 27 payments ($137M). Total value at risk: $847M. FX settlement window closes in 35 minutes.",
+    "confidence_score": 98,
+    "handoff_target": "Topology Agent",
+    "evidence_refs": ["PMT-COH-001", "PMT-COH-002", "PMT-COH-003", "CLIENT-MAP-001", "SLA-BREACH-001"],
+    "duration_ms": 1500,
+    "status": "completed",
+    "narrative": "I've identified the complete affected cohort and quantified business exposure: 142 payments totaling $847M across three corporate clients. The largest exposure is Siemens AG Treasury with $412M in stuck payments — they have a time-critical supplier payment batch that must settle before the Tokyo FX window closes. All 142 payments are frozen in 'sanctions-check-pending' state.",
+    "staticNarrative": "I've identified the complete affected cohort and quantified business exposure: 142 payments totaling $847M across three corporate clients. The largest exposure is Siemens AG Treasury with $412M in stuck payments — they have a time-critical supplier payment batch that must settle before the Tokyo FX window closes. All 142 payments are frozen in 'sanctions-check-pending' state.",
+    "businessSignal": "$847M across 142 payments at risk — 3 SLA breaches imminent within 35 minutes",
+    "scoreboardDelta": {
+      "valueAtRisk": 182,
+      "slaBreach": 35
+    },
+    "triggersHITL": false
+  },
+  {
+    "step_id": "topology",
+    "step_number": 5,
+    "agent_name": "Topology Agent",
+    "agent_icon": "🗺️",
+    "input_summary": "142-payment cohort with client SLA data, FX window schedules, and service dependency graph",
+    "finding_summary": "Service blast radius mapped: sanctions-service → payment-gateway → MQ-broker → FX-engine. Backup sanctions cluster (Region B) confirmed healthy — 99.97% uptime, 847ms p99 latency. Failover path validated with zero cross-dependencies on degraded components.",
+    "confidence_score": 95,
+    "handoff_target": "Repair Planner Agent",
+    "evidence_refs": ["TOPO-001", "SVC-HEALTH-BACKUP", "DEP-GRAPH-001", "FX-WINDOW-UTC"],
+    "duration_ms": 1400,
+    "status": "completed",
+    "narrative": "I've mapped the full service blast radius from the sanctions service through to downstream FX engines. The critical finding: a verified backup sanctions cluster in Region B is fully healthy with excellent latency. The failover path has no shared dependencies with the degraded primary — this gives us a clean remediation option. Estimated manual investigation time if we don't act: 126 ops-hours across three teams.",
+    "staticNarrative": "I've mapped the full service blast radius from the sanctions service through to downstream FX engines. The critical finding: a verified backup sanctions cluster in Region B is fully healthy with excellent latency. The failover path has no shared dependencies with the degraded primary — this gives us a clean remediation option. Estimated manual investigation time if we don't act: 126 ops-hours across three teams.",
+    "businessSignal": "Blast radius mapped — backup sanctions path verified healthy with zero shared dependencies",
+    "scoreboardDelta": {
+      "slaBreach": 32
+    },
+    "triggersHITL": false
+  },
+  {
+    "step_id": "repair",
+    "step_number": 6,
+    "agent_name": "Repair Planner Agent",
+    "agent_icon": "🔧",
+    "input_summary": "Impact assessment + system topology + available redundancy paths",
+    "finding_summary": "Generated 3 ranked remediation options. Recommended: Reroute via backup sanctions cluster (speed: 9/10, risk: 2/10, impact: 9/10). Backup path verified healthy — 99.97% uptime last 30 days. Estimated resolution: 3-5 minutes.",
+    "confidence_score": 92,
+    "handoff_target": "Governance Agent",
+    "evidence_refs": ["REPAIR-OPT-A", "REPAIR-OPT-B", "REPAIR-OPT-C", "SVC-HEALTH-BACKUP"],
+    "duration_ms": 2000,
+    "status": "completed",
+    "narrative": "I've evaluated the system topology and identified three remediation paths. My top recommendation is rerouting through the backup sanctions screening cluster — it's been running at 99.97% uptime and has capacity for this load. This approach is fast (3-5 min) and low-risk because we're using a verified production-grade service, not bypassing compliance. The second option is faster but carries regulatory risk. The third is safest but likely misses the FX window.",
+    "staticNarrative": "I've evaluated the system topology and identified three remediation paths. My top recommendation is rerouting through the backup sanctions screening cluster — it's been running at 99.97% uptime and has capacity for this load. This approach is fast (3-5 min) and low-risk because we're using a verified production-grade service, not bypassing compliance. The second option is faster but carries regulatory risk. The third is safest but likely misses the FX window.",
+    "businessSignal": "Three repair options ranked — top pick resolves in 3-5 min with minimal regulatory risk",
+    "scoreboardDelta": {
+      "investigationsAvoided": 20,
+      "slaBreach": 28
+    },
+    "triggersHITL": false
+  },
+  {
+    "step_id": "governance",
+    "step_number": 7,
+    "agent_name": "Governance Agent",
+    "agent_icon": "⚖️",
+    "input_summary": "3 remediation options with risk/speed/impact tradeoff analysis",
+    "finding_summary": "HUMAN APPROVAL REQUIRED. Value exceeds autonomous action threshold ($500M). Presenting tradeoff matrix to authorized operator. Countdown: FX window closes in 23 minutes.",
+    "confidence_score": 100,
+    "handoff_target": "HITL Cockpit",
+    "evidence_refs": ["GOV-POLICY-001", "AUTH-THRESHOLD-001", "HITL-TRIGGER-001"],
+    "duration_ms": 800,
+    "status": "completed",
+    "narrative": "This remediation exceeds the autonomous action threshold of $500M. Per governance policy GOV-POLICY-001, I am escalating to the Human-in-the-Loop approval cockpit. The three options are ready for operator review with full tradeoff analysis. Note: the FX settlement window now closes in 23 minutes — time-critical decision required.",
+    "staticNarrative": "This remediation exceeds the autonomous action threshold of $500M. Per governance policy GOV-POLICY-001, I am escalating to the Human-in-the-Loop approval cockpit. The three options are ready for operator review with full tradeoff analysis. Note: the FX settlement window now closes in 23 minutes — time-critical decision required.",
+    "businessSignal": "Autonomous threshold exceeded ($500M) — human-in-the-loop approval gate triggered",
+    "scoreboardDelta": {
+      "slaBreach": 23
+    },
+    "triggersHITL": true
+  },
+  {
+    "step_id": "execute",
+    "step_number": 8,
+    "agent_name": "Execution Agent",
+    "agent_icon": "🚀",
+    "input_summary": "Approved remediation: Option A — reroute via backup sanctions cluster",
+    "finding_summary": "Executing 6-step recovery sequence. Step 1: Backup cluster activated. Step 2: Queue redirected. Step 3: Draining 142 payments. Step 4: Retry cycle halted. Step 5: Monitoring throughput. Processing at 47 payments/minute.",
+    "confidence_score": 97,
+    "handoff_target": "Verification Agent",
+    "evidence_refs": ["EXEC-001", "EXEC-002", "EXEC-003", "QUEUE-DRAIN-LIVE"],
+    "duration_ms": 3000,
+    "status": "completed",
+    "narrative": "Recovery sequence initiated. Backup sanctions cluster activated in Region B — confirmed healthy. Message queue redirected successfully. Now draining the 142 stuck payments through the backup path at 47 payments per minute. Legacy adapter retry cycle has been halted. Throughput is stable. Estimated completion: 3 minutes.",
+    "staticNarrative": "Recovery sequence initiated. Backup sanctions cluster activated in Region B — confirmed healthy. Message queue redirected successfully. Now draining the 142 stuck payments through the backup path at 47 payments per minute. Legacy adapter retry cycle has been halted. Throughput is stable. Estimated completion: 3 minutes.",
+    "businessSignal": "Recovery executing — 47 payments/minute draining through backup sanctions path",
+    "scoreboardDelta": {
+      "paymentsStuck": 50,
+      "recoveredVolume": 1197,
+      "opsHoursSaved": 72,
+      "slaBreach": 20
+    },
+    "triggersHITL": false
+  },
+  {
+    "step_id": "verify",
+    "step_number": 9,
+    "agent_name": "Verification Agent",
+    "agent_icon": "✅",
+    "input_summary": "Recovery execution results + payment settlement confirmations",
+    "finding_summary": "Recovery verified: 139/142 payments successfully processed. 3 payments require manual review (data quality issues pre-existing). STP rate restored to 98%. Total MTTR: 11 minutes (vs 90 min manual baseline). $824M recovered. FX window met with 18 minutes to spare.",
+    "confidence_score": 99,
+    "handoff_target": "Audit Trail",
+    "evidence_refs": ["VERIFY-001", "SETTLE-CONFIRM-139", "MANUAL-REVIEW-3", "STP-METRIC-001"],
+    "duration_ms": 1600,
+    "status": "completed",
+    "narrative": "Final verification complete. 139 out of 142 payments have been successfully processed and confirmed settled. Three payments flagged for manual review due to pre-existing data quality issues unrelated to the incident. The STP rate has been restored to 98%. Total mean time to resolution: 11 minutes — compared to the 90-minute manual baseline, that's an 88% improvement. The FX settlement window was met with 18 minutes to spare. Full audit trail generated for compliance.",
+    "staticNarrative": "Final verification complete. 139 out of 142 payments have been successfully processed and confirmed settled. Three payments flagged for manual review due to pre-existing data quality issues unrelated to the incident. The STP rate has been restored to 98%. Total mean time to resolution: 11 minutes — compared to the 90-minute manual baseline, that's an 88% improvement. The FX settlement window was met with 18 minutes to spare. Full audit trail generated for compliance.",
+    "businessSignal": "Incident resolved — 139/142 payments recovered, $824M settled, FX window met",
+    "scoreboardDelta": {
+      "valueAtRisk": 12,
+      "paymentsStuck": 3,
+      "mttrAfter": 11,
+      "recoveredVolume": 1247,
+      "stpRateRestored": 98,
+      "slaBreach": 18,
+      "investigationsAvoided": 847
+    },
+    "triggersHITL": false
+  }
+]

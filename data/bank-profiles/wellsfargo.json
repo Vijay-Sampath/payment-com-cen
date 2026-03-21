@@ -1,0 +1,54 @@
+{
+  "id": "wellsfargo",
+  "name": "Wells Fargo",
+  "shortName": "WF",
+  "bicFamily": ["WFBIUS6S", "WFBIGB2L", "WFBIUS66"],
+  "platformName": "CEO Portal / WF Global Pay",
+  "cobolSystemAlias": "MISER CBS (COBOL)",
+  "riskPosture": "Conservative",
+  "primaryCorridors": [
+    {
+      "from": "US", "to": "GB", "fromCity": "San Francisco", "toCity": "London",
+      "fromCoords": [37.7749, -122.4194], "toCoords": [51.5074, -0.1278],
+      "currency": "USD/GBP", "volume": "$1.8B daily", "status": "healthy"
+    },
+    {
+      "from": "US", "to": "CA", "fromCity": "San Francisco", "toCity": "Toronto",
+      "fromCoords": [37.7749, -122.4194], "toCoords": [43.6532, -79.3832],
+      "currency": "USD/CAD", "volume": "$2.1B daily", "status": "healthy"
+    },
+    {
+      "from": "US", "to": "MX", "fromCity": "San Francisco", "toCity": "Mexico City",
+      "fromCoords": [37.7749, -122.4194], "toCoords": [19.4326, -99.1332],
+      "currency": "USD/MXN", "volume": "$950M daily", "status": "healthy"
+    },
+    {
+      "from": "GB", "to": "DE", "fromCity": "London", "toCity": "Frankfurt",
+      "fromCoords": [51.5074, -0.1278], "toCoords": [50.1109, 8.6821],
+      "currency": "GBP/EUR", "volume": "$540M daily", "status": "healthy"
+    }
+  ],
+  "clients": [
+    {
+      "name": "Chevron Energy Operations",
+      "type": "Fortune 500",
+      "industry": "Energy",
+      "avgDailyVolume": "$260M"
+    },
+    {
+      "name": "Walmart Supply Payments",
+      "type": "Fortune 500",
+      "industry": "Retail & Supply Chain",
+      "avgDailyVolume": "$440M"
+    },
+    {
+      "name": "Ford Dealer Network",
+      "type": "Global Conglomerate",
+      "industry": "Automotive",
+      "avgDailyVolume": "$190M"
+    }
+  ],
+  "theme": {
+    "accent": "#D71E28"
+  }
+}

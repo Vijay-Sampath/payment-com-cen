@@ -1,0 +1,249 @@
+{
+  "scenario_id": "sanctions_cascade",
+  "bank_id": "BOFA",
+  "incident_start": "2025-03-19T23:17:00+00:00",
+  "steps": [
+    {
+      "step": 1,
+      "agent": "Sentinel Agent",
+      "input_summary": "SWIFT rail health degrading \u2014 p95 latency 3,847ms on sanctions-svc",
+      "finding_summary": "Anomaly detected: sanctions-svc timeout rate 47x baseline. Circuit breaker HALF_OPEN on OFAC-SCSN-EU-01. 847 payments queuing across USD-EUR corridor.",
+      "confidence": 94,
+      "handoff_target": "Correlator Agent",
+      "evidence_refs": [
+        "span_70e07e56",
+        "log_86ea4e66"
+      ],
+      "business_signal": "Queue depth: 847 payments, $61M notional",
+      "duration_ms": 1240,
+      "static_narrative": "The Sentinel Agent detected a critical anomaly in the USD-EUR corridor at 23:17 EST. Sanctions screening latency crossed 3,800ms \u2014 47 times the baseline \u2014 triggering a circuit breaker on the OFAC SCSN EU node. 847 high-value payments from Siemens AG Treasury, Rio Tinto Commodities, and Merck FX Desk are now queuing behind the CashPro / GPP Hub gateway.",
+      "scoreboard_delta": {
+        "value_at_risk_m": 61,
+        "payments_stuck": 847,
+        "sla_breach_minutes": 43
+      }
+    },
+    {
+      "step": 2,
+      "agent": "Correlator Agent",
+      "input_summary": "847 payment failures + FTS-2000 (COBOL) adapter telemetry + MQ depth signals",
+      "finding_summary": "Root cause chain identified: sanctions-svc connection pool saturated \u2192 FTS-2000 (COBOL) interpreting timeouts as soft-fail \u2192 3x retry amplification \u2192 queue depth 2,847.",
+      "confidence": 91,
+      "handoff_target": "Log Cluster Agent",
+      "evidence_refs": [
+        "span_11d439b9",
+        "metric_8bb61ef3",
+        "trace_d28198cb"
+      ],
+      "business_signal": "Retry storm: FTS-2000 (COBOL) generating 3x message volume",
+      "duration_ms": 1870,
+      "static_narrative": "Cross-referencing 847 payment traces with FTS-2000 (COBOL) adapter telemetry reveals the amplification chain. The sanctions service connection pool (50 threads) is fully saturated. FTS-2000 (COBOL) \u2014 the bank's COBOL-era settlement adapter \u2014 interprets every timeout as a retryable soft failure and re-submits 3 times per message. This turned a linear latency spike into an exponential queue growth event. The CashPro / GPP Hub message queue has grown from 12 to 2,847 messages.",
+      "scoreboard_delta": {
+        "value_at_risk_m": 98,
+        "payments_stuck": 1247,
+        "sla_breach_minutes": 38
+      }
+    },
+    {
+      "step": 3,
+      "agent": "Log Cluster Agent",
+      "input_summary": "12,847 log entries from sanctions-svc, FTS-2000 (COBOL), MQ broker, fx-engine",
+      "finding_summary": "4 semantic clusters: sanctions-timeout (38%), FTS-2000 (COBOL) retry-noise (41%), queue-overflow (15%), fx-staleness (6%). Retry noise masks root cause in manual triage.",
+      "confidence": 89,
+      "handoff_target": "Cohort Agent",
+      "evidence_refs": [
+        "cluster_97af81",
+        "cluster_3b38fe",
+        "cluster_afe5f6",
+        "cluster_7d690f"
+      ],
+      "business_signal": "41% of logs are retry noise masking root cause",
+      "duration_ms": 2340,
+      "static_narrative": "Semantic clustering of 12,847 log entries reveals the signal-to-noise problem. FTS-2000 (COBOL) retry noise constitutes 41% of all log volume \u2014 in a traditional SOC, analysts would spend hours filtering these before reaching the sanctions root cause (38%). The AI semantic engine cut through this in 2.3 seconds. A secondary FX rate staleness cluster (6%) indicates the USD/EUR rate cache is aging beyond threshold, creating a downstream risk for any payments that do clear.",
+      "scoreboard_delta": {
+        "value_at_risk_m": 124,
+        "payments_stuck": 1247,
+        "sla_breach_minutes": 33
+      }
+    },
+    {
+      "step": 4,
+      "agent": "Cohort Agent",
+      "input_summary": "Clustered failure patterns + active payment records + client SLA data",
+      "finding_summary": "Affected cohort: 1,247 payments across 3 clients. Siemens AG Treasury: 487 ($74M). Rio Tinto Commodities: 412 ($63M). Merck FX Desk: 348 ($45M). All stuck in sanctions-check-pending.",
+      "confidence": 97,
+      "handoff_target": "Impact Agent",
+      "evidence_refs": [
+        "cohort_4fc55a",
+        "cohort_5047cb",
+        "cohort_b9d17b"
+      ],
+      "business_signal": "3 Tier-1 clients affected: Siemens AG Treasury, Rio Tinto Commodities, Merck FX Desk",
+      "duration_ms": 980,
+      "static_narrative": "Complete cohort identification: 1,247 payments totaling $182M across three institutional clients. Siemens AG Treasury has the largest exposure at $74M with a time-critical batch sweep that must settle before the Tokyo FX window. Rio Tinto Commodities has $63M in queued energy hedging payments. Merck FX Desk has $45M in supply chain settlements. All 1,247 payments are frozen in sanctions-check-pending state with BIC BOFAUS3N as originator.",
+      "scoreboard_delta": {
+        "value_at_risk_m": 182,
+        "payments_stuck": 1247,
+        "sla_breach_minutes": 28
+      }
+    },
+    {
+      "step": 5,
+      "agent": "Impact Agent",
+      "input_summary": "1,247-payment cohort + FX window schedules + regulatory thresholds",
+      "finding_summary": "Total value at risk: $182M. FX settlement window closes in 28 min. GPI SLA breach on all 1,247 payments. Regulatory reporting trigger if >$100M delayed >60min.",
+      "confidence": 95,
+      "handoff_target": "Repair Agent",
+      "evidence_refs": [
+        "sla_68c706",
+        "reg_8b886f",
+        "fx_2cac43"
+      ],
+      "business_signal": "SLA breach: 1,247 payments, $182M, 28 min to FX close",
+      "duration_ms": 1120,
+      "static_narrative": "Business impact is severe and time-critical. $182M at risk with a hard deadline \u2014 the FX settlement window closes at 23:45 UTC (28 minutes). All 1,247 payments are in GPI SLA breach. The OCC supervised \u00b7 DFAST \u00b7 Basel III LCR framework triggers mandatory regulatory reporting if >$100M remains delayed beyond 60 minutes. Manual alternative: estimated 72 ops-hours across three regional investigation teams, well beyond the window.",
+      "scoreboard_delta": {
+        "value_at_risk_m": 182,
+        "payments_stuck": 1247,
+        "sla_breach_minutes": 28
+      }
+    },
+    {
+      "step": 6,
+      "agent": "Repair Agent",
+      "input_summary": "Impact assessment + CashPro / GPP Hub topology + redundancy paths",
+      "finding_summary": "3 remediation options generated. Recommended: Reroute via REFINITIV-WCO-US-01 (speed 9/10, risk 3/10). Backup vendor verified healthy \u2014 99.97% uptime.",
+      "confidence": 92,
+      "handoff_target": "Governance Agent",
+      "evidence_refs": [
+        "repair_1b11d2",
+        "repair_4d00b8",
+        "repair_01b6de"
+      ],
+      "business_signal": "Recommended: reroute via backup sanctions provider, est. 4 min",
+      "duration_ms": 1560,
+      "static_narrative": "Evaluated CashPro / GPP Hub topology and identified three remediation paths. Top recommendation: reroute all 1,247 queued payments through REFINITIV-WCO-US-01 (secondary sanctions vendor). This secondary provider has maintained 99.97% uptime over the past 30 days and has spare capacity. Critically, this is not a sanctions bypass \u2014 all payments still undergo full OFAC+EU+UK screening through an equivalent provider. Estimated 4-minute switchover including queue drain.",
+      "scoreboard_delta": {
+        "value_at_risk_m": 182,
+        "payments_stuck": 1247,
+        "sla_breach_minutes": 24
+      }
+    },
+    {
+      "step": 7,
+      "agent": "Governance Agent",
+      "input_summary": "3 remediation options with risk/speed/impact tradeoff matrix",
+      "finding_summary": "HUMAN APPROVAL REQUIRED. Value ($182M) exceeds autonomous threshold ($50M). Escalating to authorized operator. Countdown: FX window 24 min.",
+      "confidence": 100,
+      "handoff_target": "HITL Cockpit",
+      "evidence_refs": [
+        "gov_4711cf",
+        "auth_5976d7"
+      ],
+      "business_signal": "Governance gate: $182M exceeds $50M autonomous limit",
+      "duration_ms": 480,
+      "static_narrative": "Under OCC supervised \u00b7 DFAST \u00b7 Basel III LCR governance framework, remediation actions affecting >$50M require human-in-the-loop approval. The $182M exposure is 3.6x the autonomous threshold. Escalating to the HITL cockpit with all three options, tradeoff analysis, and the 24-minute countdown. The Governance Agent has pre-validated Option A against the bank's compliance rulebook \u2014 no sanctions bypass, all screening maintained through equivalent vendor.",
+      "scoreboard_delta": {
+        "value_at_risk_m": 182,
+        "payments_stuck": 1247,
+        "sla_breach_minutes": 24
+      }
+    },
+    {
+      "step": 8,
+      "agent": "Recovery Agent",
+      "input_summary": "Approved: Option A \u2014 reroute via REFINITIV-WCO-US-01",
+      "finding_summary": "Executing 6-step recovery. Queue redirected. FTS-2000 (COBOL) retry cycle halted. Draining 1,247 payments at 52 payments/min. Circuit breaker transitioning CLOSED.",
+      "confidence": 96,
+      "handoff_target": "Verification Agent",
+      "evidence_refs": [
+        "exec_22adac",
+        "exec_4550ff",
+        "exec_b6868a",
+        "exec_089391"
+      ],
+      "business_signal": "Recovery in progress: 52 payments/min drain rate",
+      "duration_ms": 240000,
+      "static_narrative": "Recovery sequence executing. REFINITIV-WCO-US-01 activated and confirmed healthy. Message queue redirected from OFAC-SCSN-EU-01 to secondary vendor. FTS-2000 (COBOL) retry cycle halted \u2014 adapter set to single-attempt mode. Currently draining 1,247 queued payments at 52 payments per minute through the backup screening path. Circuit breaker on primary sanctions node transitioning to CLOSED as load is removed. Queue depth falling: 2,847 \u2192 1,900 \u2192 1,100.",
+      "scoreboard_delta": {
+        "value_at_risk_m": 45,
+        "payments_stuck": 312,
+        "sla_breach_minutes": 18
+      }
+    },
+    {
+      "step": 9,
+      "agent": "Verification Agent",
+      "input_summary": "Recovery execution logs + settlement confirmations + GPI tracker",
+      "finding_summary": "Recovery verified: 1,247/1,247 payments cleared. STP rate restored to 98%. MTTR: 11 min (vs 90 min manual). FX window met with 17 min to spare.",
+      "confidence": 99,
+      "handoff_target": "Audit Trail",
+      "evidence_refs": [
+        "verify_562a1e",
+        "settle_37de84",
+        "gpi_07283e"
+      ],
+      "business_signal": "RESOLVED: 1,247 payments cleared, $182M protected, 17 min to spare",
+      "duration_ms": 2680,
+      "static_narrative": "Final verification complete. All 1,247 payments have been processed through REFINITIV-WCO-US-01 and confirmed settled via GPI tracker. STP rate restored from 71% to 98%. Mean time to resolution: 11 minutes \u2014 compared to the estimated 90-minute manual baseline, that's an 88% improvement. The FX settlement window was met with 17 minutes to spare. FTS-2000 (COBOL) has resumed normal retry behavior. Circuit breaker on OFAC-SCSN-EU-01 now CLOSED. Full 9-step audit trail generated for OCC supervised \u00b7 DFAST \u00b7 Basel III LCR compliance review.",
+      "scoreboard_delta": {
+        "value_at_risk_m": 0,
+        "payments_stuck": 0,
+        "sla_breach_minutes": 17
+      }
+    }
+  ],
+  "remediation_options": [
+    {
+      "id": "opt_a",
+      "title": "Reroute via backup sanctions provider",
+      "description": "Switch OFAC screening to REFINITIV-WCO-US-01 (secondary vendor). Estimated 3min switchover. Full compliance screening maintained through equivalent provider.",
+      "speed_score": 9,
+      "risk_score": 3,
+      "business_impact_score": 9,
+      "estimated_recovery_min": 4,
+      "payments_recovered": 1247,
+      "value_recovered_m": 182,
+      "requires_approval": true,
+      "recommended": true
+    },
+    {
+      "id": "opt_b",
+      "title": "Pause batch + retry at 06:00 EST",
+      "description": "Hold all queued payments. Schedule batch re-submission at 06:00 EST when sanctions service has been restarted. Misses current FX window.",
+      "speed_score": 2,
+      "risk_score": 1,
+      "business_impact_score": 4,
+      "estimated_recovery_min": 410,
+      "payments_recovered": 1247,
+      "value_recovered_m": 182,
+      "requires_approval": true,
+      "recommended": false
+    },
+    {
+      "id": "opt_c",
+      "title": "Isolate affected cohort + manual review queue",
+      "description": "Quarantine 1,247 stuck payments. Route to manual review queue for Ops team triage. Partial recovery possible within 45 min.",
+      "speed_score": 5,
+      "risk_score": 2,
+      "business_impact_score": 6,
+      "estimated_recovery_min": 45,
+      "payments_recovered": 980,
+      "value_recovered_m": 143,
+      "requires_approval": true,
+      "recommended": false
+    }
+  ],
+  "outcome": {
+    "mttr_before_min": 90,
+    "mttr_after_min": 11,
+    "payments_recovered": 1247,
+    "value_protected_m": 182,
+    "ops_hours_saved": 72,
+    "sla_breaches_prevented": 1247,
+    "stp_rate_before_pct": 71,
+    "stp_rate_after_pct": 98,
+    "manual_investigations_avoided": 847,
+    "audit_entries": 9
+  }
+}

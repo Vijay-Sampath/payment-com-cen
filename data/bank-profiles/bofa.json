@@ -1,0 +1,54 @@
+{
+  "id": "bofa",
+  "name": "Bank of America",
+  "shortName": "BofA",
+  "bicFamily": ["BOFAUS3N", "BOFAUS6S", "BOFAGB2L"],
+  "platformName": "CashPro / GPP Hub",
+  "cobolSystemAlias": "FTS-2000 (COBOL)",
+  "riskPosture": "Conservative",
+  "primaryCorridors": [
+    {
+      "from": "US", "to": "GB", "fromCity": "New York", "toCity": "London",
+      "fromCoords": [40.7128, -74.006], "toCoords": [51.5074, -0.1278],
+      "currency": "USD/GBP", "volume": "$2.4B daily", "status": "healthy"
+    },
+    {
+      "from": "US", "to": "JP", "fromCity": "New York", "toCity": "Tokyo",
+      "fromCoords": [40.7128, -74.006], "toCoords": [35.6762, 139.6503],
+      "currency": "USD/JPY", "volume": "$1.8B daily", "status": "healthy"
+    },
+    {
+      "from": "US", "to": "SG", "fromCity": "Charlotte", "toCity": "Singapore",
+      "fromCoords": [35.2271, -80.8431], "toCoords": [1.3521, 103.8198],
+      "currency": "USD/SGD", "volume": "$900M daily", "status": "healthy"
+    },
+    {
+      "from": "GB", "to": "HK", "fromCity": "London", "toCity": "Hong Kong",
+      "fromCoords": [51.5074, -0.1278], "toCoords": [22.3193, 114.1694],
+      "currency": "GBP/HKD", "volume": "$650M daily", "status": "healthy"
+    }
+  ],
+  "clients": [
+    {
+      "name": "Siemens AG Treasury",
+      "type": "Fortune 500",
+      "industry": "Advanced Manufacturing",
+      "avgDailyVolume": "$340M"
+    },
+    {
+      "name": "Rio Tinto Commodities",
+      "type": "Sovereign Wealth",
+      "industry": "Commodities & Mining",
+      "avgDailyVolume": "$520M"
+    },
+    {
+      "name": "Merck FX Desk",
+      "type": "Global Conglomerate",
+      "industry": "Healthcare & Pharma",
+      "avgDailyVolume": "$180M"
+    }
+  ],
+  "theme": {
+    "accent": "#dc143c"
+  }
+}

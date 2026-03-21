@@ -1,0 +1,242 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --deep-navy: #f8fafc;
+  --surface: #ffffff;
+  --surface-light: #f1f5f9;
+  --border: #e2e8f0;
+  --teal: #0d9488;
+  --teal-dim: #0f766e;
+  --teal-glow: rgba(13, 148, 136, 0.10);
+  --amber: #d97706;
+  --coral: #dc2626;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--deep-navy);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── White card effect (replaces glass) ── */
+.glass {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.glass-card {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* ── Subtle shadow effects (replaces glows) ── */
+.glow-teal {
+  box-shadow: 0 1px 3px rgba(13, 148, 136, 0.15), 0 4px 12px rgba(13, 148, 136, 0.10);
+}
+.glow-amber {
+  box-shadow: 0 1px 3px rgba(217, 119, 6, 0.15), 0 4px 12px rgba(217, 119, 6, 0.10);
+}
+.glow-coral {
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.15), 0 4px 12px rgba(220, 38, 38, 0.10);
+}
+.glow-text-teal { color: #0d9488; }
+.glow-text-coral { color: #dc2626; }
+.glow-text-amber { color: #d97706; }
+
+/* ── Agent pulse (active card) ── */
+@keyframes agent-pulse {
+  0%, 100% { box-shadow: 0 1px 3px rgba(13,148,136,0.1); border-color: rgba(13,148,136,0.3); }
+  50%      { box-shadow: 0 2px 8px rgba(13,148,136,0.2), 0 4px 16px rgba(13,148,136,0.08); border-color: rgba(13,148,136,0.5); }
+}
+.agent-active { animation: agent-pulse 2s ease-in-out infinite; }
+
+/* ── Status pulse ── */
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+.status-pulse { animation: status-pulse 1.5s ease-in-out infinite; }
+
+/* ── Counter flash on update ── */
+@keyframes counter-flash {
+  0%   { color: #0d9488; transform: scale(1.08); }
+  100% { color: var(--text-primary); transform: scale(1); }
+}
+.counter-update { animation: counter-flash 0.5s ease-out; }
+
+/* ── Corridor arc animations ── */
+@keyframes dash-flow {
+  to { stroke-dashoffset: -20; }
+}
+.arc-flowing  { stroke-dasharray: 10 5; animation: dash-flow 1s linear infinite; }
+.arc-degraded { stroke-dasharray: 8 4;  animation: dash-flow 1.8s linear infinite; }
+.arc-critical { stroke-dasharray: 4 4;  animation: dash-flow 0.4s linear infinite; }
+
+/* ── Typewriter cursor blink ── */
+@keyframes blink-caret {
+  0%, 100% { border-color: transparent; }
+  50%      { border-color: #0d9488; }
+}
+.typewriter-cursor {
+  border-right: 2px solid #0d9488;
+  animation: blink-caret 0.8s step-end infinite;
+}
+
+/* ── Emergency pulse for HITL ── */
+@keyframes emergency-pulse {
+  0%, 100% { background: rgba(220, 38, 38, 0.03); }
+  50%      { background: rgba(220, 38, 38, 0.07); }
+}
+.emergency-bg { animation: emergency-pulse 2s ease-in-out infinite; }
+
+/* ── Scanline overlay — hidden on light theme ── */
+.scanline { position: relative; overflow: hidden; }
+.scanline::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(13,148,136,0.04), transparent);
+  animation: scanline-move 4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes scanline-move {
+  0%   { top: 0; }
+  100% { top: 100%; }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(13,148,136,0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(13,148,136,0.4); }
+
+/* ── Recharts overrides ── */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(226, 232, 240, 0.8) !important;
+}
+.recharts-text { fill: #64748b !important; font-size: 12px !important; }
+
+/* ── Thinking dots (agent card activation) ── */
+@keyframes thinking-dot {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+.thinking-dots span:nth-child(1) { animation: thinking-dot 1.4s ease-in-out infinite; }
+.thinking-dots span:nth-child(2) { animation: thinking-dot 1.4s ease-in-out 0.2s infinite; }
+.thinking-dots span:nth-child(3) { animation: thinking-dot 1.4s ease-in-out 0.4s infinite; }
+
+/* ── Scoreboard value flash ── */
+@keyframes value-escalate {
+  0% { transform: scale(1); }
+  30% { color: #dc2626; transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@keyframes value-recover {
+  0% { transform: scale(1); }
+  30% { color: #0d9488; transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.value-escalate { animation: value-escalate 0.6s ease-out; }
+.value-recover { animation: value-recover 0.6s ease-out; }
+
+/* ── HITL pulse button ── */
+@keyframes hitl-pulse-btn {
+  0%, 100% { box-shadow: 0 1px 4px rgba(13,148,136,0.15), 0 4px 12px rgba(13,148,136,0.08); }
+  50% { box-shadow: 0 2px 8px rgba(13,148,136,0.25), 0 8px 24px rgba(13,148,136,0.12); }
+}
+.hitl-pulse-btn { animation: hitl-pulse-btn 2s ease-in-out infinite; }
+
+/* ── HITL red tint overlay ── */
+@keyframes hitl-red-tint {
+  0%, 100% { background: rgba(220,38,38,0.02); }
+  50% { background: rgba(220,38,38,0.04); }
+}
+.hitl-red-tint { animation: hitl-red-tint 3s ease-in-out infinite; }
+
+/* ── Confetti burst (CSS-only for recovery) ── */
+@keyframes confetti-fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+.confetti-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ── Resolution teal flash ── */
+@keyframes resolution-flash {
+  0% { opacity: 0; }
+  15% { opacity: 0.1; }
+  100% { opacity: 0; }
+}
+.resolution-flash {
+  position: fixed;
+  inset: 0;
+  background: #0d9488;
+  z-index: 100;
+  pointer-events: none;
+  animation: resolution-flash 1.2s ease-out forwards;
+}
+
+/* ── Breathing ambient pulse (pre-incident) ── */
+@keyframes ambient-breathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+.ambient-breathe { animation: ambient-breathe 4s ease-in-out infinite; }
+
+/* ── Token hop along service chain ── */
+@keyframes token-pulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(13,148,136,0.3); transform: scale(1); }
+  50% { box-shadow: 0 0 10px rgba(13,148,136,0.5); transform: scale(1.15); }
+}
+.token-active { animation: token-pulse 0.8s ease-in-out infinite; }
+
+/* ── Bank switch crossfade ── */
+@keyframes bank-crossfade {
+  0% { opacity: 0; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.bank-transition { animation: bank-crossfade 0.4s ease-out; }
+
+/* ── Particle flow on corridor arcs (SVG) ── */
+@keyframes particle-flow {
+  0% { offset-distance: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+/* ── Prefers reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .scanline::after { display: none; }
+  .confetti-particle { display: none; }
+}

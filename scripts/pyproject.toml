@@ -1,0 +1,17 @@
+[project]
+name = "payment-data-generator"
+version = "1.0.0"
+description = "Synthetic payments data generator for Agentic AI Command Center"
+requires-python = ">=3.10"
+dependencies = [
+    "faker>=28.0",
+    "duckdb>=1.0",
+    "pandas>=2.2",
+    "pyarrow>=17.0",
+    "numpy>=1.26",
+    "python-dateutil>=2.9",
+    "rich>=13.7",
+]
+
+[dependency-groups]
+dev = []

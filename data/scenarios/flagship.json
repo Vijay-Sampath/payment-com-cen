@@ -1,0 +1,104 @@
+{
+  "id": "sanctions-cascade",
+  "title": "Sanctions Screening Latency Cascade",
+  "subtitle": "Legacy adapter retry storm with FX settlement deadline",
+  "description": "A high-value USD batch sweep begins failing intermittently. The sanctions screening service times out under load. Queue depth rises exponentially. The legacy COBOL hub starts retrying failed messages. FX settlement window closes in 43 minutes. Without intervention, $847M in cross-border payments will miss the cut-off.",
+  "severity": "critical",
+  "trigger": "Sanctions microservice p99 latency exceeds 12s threshold",
+  "impactSummary": "142 payments stuck across 3 corridors, $847M at risk, 3 corporate clients affected",
+  "timeline": [
+    { "timestamp": "14:23:01", "event": "Sanctions screening p99 latency spikes to 14.2s (threshold: 3s)", "severity": "warning", "source": "APM-Monitor" },
+    { "timestamp": "14:23:18", "event": "First payment timeout detected on US→GB corridor", "severity": "warning", "source": "Payment-Gateway" },
+    { "timestamp": "14:24:02", "event": "Legacy adapter begins retry cycle — 3 retries per failed message", "severity": "critical", "source": "COBOL-Bridge" },
+    { "timestamp": "14:24:45", "event": "Queue depth exceeds 500 messages (normal: 12)", "severity": "critical", "source": "MQ-Monitor" },
+    { "timestamp": "14:25:12", "event": "Second corridor affected: US→JP payments backing up", "severity": "critical", "source": "Payment-Gateway" },
+    { "timestamp": "14:25:58", "event": "Third corridor impacted: US→SG showing timeouts", "severity": "critical", "source": "Payment-Gateway" },
+    { "timestamp": "14:26:30", "event": "Sentinel Agent: Anomaly detected — multi-corridor payment failure pattern", "severity": "info", "source": "AI-Sentinel" },
+    { "timestamp": "14:26:45", "event": "Correlator Agent: Root cause identified — sanctions service cascading failure", "severity": "info", "source": "AI-Correlator" },
+    { "timestamp": "14:27:15", "event": "Impact Agent: 142 payments, $847M at risk, FX window closes 14:53 UTC", "severity": "info", "source": "AI-Impact" },
+    { "timestamp": "14:27:45", "event": "Repair Agent: 3 remediation options generated", "severity": "info", "source": "AI-Repair" },
+    { "timestamp": "14:28:00", "event": "Governance Gate: Human approval required — high-value threshold exceeded", "severity": "warning", "source": "AI-Governance" },
+    { "timestamp": "14:28:30", "event": "HITL: Operator approves Option A — reroute via backup sanctions service", "severity": "info", "source": "HITL-Console" },
+    { "timestamp": "14:28:45", "event": "Recovery Agent: Executing remediation — draining queue via backup path", "severity": "info", "source": "AI-Recovery" },
+    { "timestamp": "14:30:12", "event": "Verification Agent: 139/142 payments recovered, STP rate restored to 99.2%", "severity": "info", "source": "AI-Verify" }
+  ],
+  "initialMetrics": {
+    "valueAtRisk": 182,
+    "paymentsStuck": 1247,
+    "slaBreach": 43,
+    "investigationsAvoided": 0,
+    "opsHoursSaved": 0,
+    "mttrBefore": 90,
+    "mttrAfter": 90,
+    "recoveredVolume": 0,
+    "stpRateRestored": 71
+  },
+  "finalMetrics": {
+    "valueAtRisk": 12,
+    "paymentsStuck": 3,
+    "slaBreach": 18,
+    "investigationsAvoided": 847,
+    "opsHoursSaved": 72,
+    "mttrBefore": 90,
+    "mttrAfter": 11,
+    "recoveredVolume": 1247,
+    "stpRateRestored": 98
+  },
+  "remediationOptions": [
+    {
+      "id": "option-a",
+      "rank": 1,
+      "title": "Reroute via Backup Sanctions Service",
+      "description": "Redirect queued payments to the secondary compliance screening cluster. Drain retry queue. Resume normal flow once primary stabilizes.",
+      "speed": 9,
+      "risk": 2,
+      "businessImpact": 9,
+      "recommended": true,
+      "steps": [
+        "Activate standby compliance cluster (Region B)",
+        "Redirect message queue to backup sanctions endpoint",
+        "Flush 142 stuck payments through backup path",
+        "Halt legacy adapter retry cycle",
+        "Monitor backup throughput for 60 seconds",
+        "Gradually restore primary path traffic"
+      ],
+      "estimatedTime": "3-5 minutes"
+    },
+    {
+      "id": "option-b",
+      "rank": 2,
+      "title": "Batch Override with Post-Hoc Screening",
+      "description": "Apply expedited screening using cached sanctions list (< 4 hours old). Flag all payments for mandatory post-settlement re-screening within T+1.",
+      "speed": 10,
+      "risk": 6,
+      "businessImpact": 8,
+      "recommended": false,
+      "steps": [
+        "Apply cached sanctions list (last updated 14:00 UTC)",
+        "Release 142 payments with expedited screening flag",
+        "Schedule T+1 full re-screening batch",
+        "Notify compliance team of override action",
+        "Generate audit trail for regulatory reporting"
+      ],
+      "estimatedTime": "1-2 minutes"
+    },
+    {
+      "id": "option-c",
+      "rank": 3,
+      "title": "Controlled Queue Hold + Manual Escalation",
+      "description": "Stabilize the queue, prevent further retries, and escalate to Ops team for manual intervention. Safest option but risks missing FX window.",
+      "speed": 3,
+      "risk": 1,
+      "businessImpact": 4,
+      "recommended": false,
+      "steps": [
+        "Halt all retry cycles on legacy adapter",
+        "Place queue in controlled hold state",
+        "Notify Ops team via PagerDuty",
+        "Await manual triage and decision",
+        "Resume processing after manual clearance"
+      ],
+      "estimatedTime": "15-45 minutes"
+    }
+  ]
+}

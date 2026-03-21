@@ -1,0 +1,54 @@
+{
+  "id": "jpmorgan",
+  "name": "JPMorgan Chase",
+  "shortName": "JPM",
+  "bicFamily": ["CHASUS33", "CHASGB2L", "CHASDEFX"],
+  "platformName": "J.P. Morgan ACCESS",
+  "cobolSystemAlias": "Hogan CBS (COBOL)",
+  "riskPosture": "Aggressive",
+  "primaryCorridors": [
+    {
+      "from": "US", "to": "GB", "fromCity": "New York", "toCity": "London",
+      "fromCoords": [40.7128, -74.006], "toCoords": [51.5074, -0.1278],
+      "currency": "USD/GBP", "volume": "$4.2B daily", "status": "healthy"
+    },
+    {
+      "from": "US", "to": "DE", "fromCity": "New York", "toCity": "Frankfurt",
+      "fromCoords": [40.7128, -74.006], "toCoords": [50.1109, 8.6821],
+      "currency": "USD/EUR", "volume": "$3.5B daily", "status": "healthy"
+    },
+    {
+      "from": "GB", "to": "JP", "fromCity": "London", "toCity": "Tokyo",
+      "fromCoords": [51.5074, -0.1278], "toCoords": [35.6762, 139.6503],
+      "currency": "GBP/JPY", "volume": "$1.9B daily", "status": "healthy"
+    },
+    {
+      "from": "SG", "to": "AU", "fromCity": "Singapore", "toCity": "Sydney",
+      "fromCoords": [1.3521, 103.8198], "toCoords": [-33.8688, 151.2093],
+      "currency": "SGD/AUD", "volume": "$720M daily", "status": "healthy"
+    }
+  ],
+  "clients": [
+    {
+      "name": "Apple Treasury Operations",
+      "type": "Fortune 500",
+      "industry": "Technology",
+      "avgDailyVolume": "$620M"
+    },
+    {
+      "name": "Boeing Supply Chain",
+      "type": "Fortune 500",
+      "industry": "Aerospace & Defense",
+      "avgDailyVolume": "$950M"
+    },
+    {
+      "name": "TOTAL Energy Hedging",
+      "type": "Global Conglomerate",
+      "industry": "Energy",
+      "avgDailyVolume": "$410M"
+    }
+  ],
+  "theme": {
+    "accent": "#0A5CA8"
+  }
+}
