@@ -230,6 +230,13 @@ body {
   100% { offset-distance: 100%; opacity: 0; }
 }
 
+/* ── Tour spotlight pulse ── */
+@keyframes tour-spotlight-pulse {
+  0%, 100% { border-color: rgba(13, 148, 136, 0.6); }
+  50%      { border-color: rgba(13, 148, 136, 1); }
+}
+.tour-spotlight-pulse { animation: tour-spotlight-pulse 1.5s ease-in-out infinite; }
+
 /* ── Prefers reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

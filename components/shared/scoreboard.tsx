@@ -35,6 +35,9 @@ export function Scoreboard() {
   const { state } = useApp()
   const m = state.scoreboard
   const phase = state.workflow.incidentPhase
+  const repairPending = state.repair.queue.filter(
+    (i) => i.status === 'ai_proposed' || i.status === 'human_review' || i.status === 'queued'
+  ).length
   const isPreIncident = phase === 'pre-incident'
   const resolved = phase === 'resolved'
 
@@ -59,6 +62,7 @@ export function Scoreboard() {
 
   return (
     <div
+      data-tour="scoreboard"
       className="w-full h-16 shrink-0 flex items-center justify-between px-6 border-b border-[#e2e8f0]"
       style={{ background: '#ffffff' }}
     >
@@ -111,6 +115,11 @@ export function Scoreboard() {
             </div>
 
             <KPI label="STP Rate" value={m.stpRateRestored} suffix="%" decimals={1} trend={m.stpRateRestored > 95 ? 'good' : 'bad'} />
+
+            {/* Exceptions KPI — shown in resolved state */}
+            {resolved && (
+              <KPI label="Exceptions" value={repairPending} trend={repairPending === 0 ? 'good' : 'bad'} />
+            )}
           </>
         )}
       </div>

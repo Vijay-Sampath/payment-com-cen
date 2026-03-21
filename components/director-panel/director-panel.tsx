@@ -204,6 +204,7 @@ export function DirectorPanel() {
       {/* Emergency visual fallback: tiny teal dot in bottom-right */}
       {!director.isOpen && (
         <button
+          data-tour="director-dot"
           onClick={toggleDirector}
           className="fixed bottom-3 right-3 w-[6px] h-[6px] rounded-full bg-[#00d4aa]/60 z-50 hover:w-3 hover:h-3 hover:bg-[#00d4aa] transition-all"
           title="Director Panel (Cmd+Shift+D)"
@@ -296,7 +297,7 @@ export function DirectorPanel() {
               {/* ============ SECTION 2: Playback Controls ============ */}
               <Section title="Playback Controls">
                 {/* Main controls row */}
-                <div className="flex gap-1.5 mb-3">
+                <div data-tour="playback-controls" className="flex gap-1.5 mb-3">
                   <SmallBtn onClick={handleReset}>⏮ Reset</SmallBtn>
                   <SmallBtn onClick={handlePrev}>⏪ Prev</SmallBtn>
                   <SmallBtn
@@ -483,7 +484,38 @@ export function DirectorPanel() {
                 </div>
               </Section>
 
-              {/* ============ SECTION 6: Reliability Controls ============ */}
+              {/* ============ SECTION 6: Repair Controls ============ */}
+              <Section title="Repair Controls" defaultOpen={false}>
+                <div className="space-y-2">
+                  <div className="px-3 py-2 rounded-md bg-[#0a0f1e] border border-[#1e2d4a]">
+                    <span className="text-[11px] text-[#94a3b8]">
+                      Repair Queue: {state.repair.queue.filter((i) => i.status === 'approved' || i.status === 'applied' || i.status === 'verified').length} of {state.repair.queue.length} approved
+                    </span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <SmallBtn
+                      variant="teal"
+                      onClick={() => {
+                        dispatch({ type: 'APPROVE_ALL_REPAIRS' })
+                        showToast('All repair items approved (batch)', 'success')
+                      }}
+                    >
+                      Approve All Repairs
+                    </SmallBtn>
+                    <SmallBtn
+                      variant="amber"
+                      onClick={() => {
+                        dispatch({ type: 'RESET_REPAIR_QUEUE' })
+                        showToast('Repair queue reset to initial state', 'info')
+                      }}
+                    >
+                      Reset Repair Queue
+                    </SmallBtn>
+                  </div>
+                </div>
+              </Section>
+
+              {/* ============ SECTION 7: Reliability Controls ============ */}
               <Section title="Reliability Controls" defaultOpen={false}>
                 {/* API status */}
                 <div className="flex items-center gap-2 mb-3">

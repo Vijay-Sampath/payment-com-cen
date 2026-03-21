@@ -281,7 +281,7 @@ export default function HITLCockpitPage() {
       </motion.div>
 
       {/* Remediation options grid — 3 cards with staggered entrance */}
-      <div className="grid grid-cols-3 gap-5">
+      <div data-tour="hitl-options" className="grid grid-cols-3 gap-5">
         {scenario.remediationOptions.map((option, index) => (
           <RemediationCard
             key={option.id}
@@ -296,6 +296,7 @@ export default function HITLCockpitPage() {
       {/* Approve CTA with pulsing glow */}
       {!isApproved && (
         <motion.div
+          data-tour="hitl-approve"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}

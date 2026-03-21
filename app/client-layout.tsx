@@ -7,6 +7,8 @@ import { BankSwitcher } from '@/components/shared/bank-switcher'
 import { NavSidebar } from '@/components/shared/nav-sidebar'
 import { DirectorPanel } from '@/components/director-panel/director-panel'
 import { ToastContainer } from '@/components/shared/toast'
+import { TourToggle } from '@/components/guided-tour/tour-toggle'
+import { GuidedTour } from '@/components/guided-tour/guided-tour'
 
 function LayoutInner({ children }: { children: ReactNode }) {
   const { state, bankTransitioning } = useApp()
@@ -31,6 +33,7 @@ function LayoutInner({ children }: { children: ReactNode }) {
             {state.bank.riskPosture}
           </span>
           <BankSwitcher />
+          <TourToggle />
         </div>
       </div>
 
@@ -54,6 +57,9 @@ function LayoutInner({ children }: { children: ReactNode }) {
 
       {/* Toast notifications */}
       <ToastContainer />
+
+      {/* Guided tour overlay */}
+      <GuidedTour />
     </div>
   )
 }

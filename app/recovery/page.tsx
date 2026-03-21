@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '@/lib/store'
 import { AnimatedCounter } from '@/components/shared/animated-counter'
@@ -192,7 +193,7 @@ export default function RecoveryPage() {
       </div>
 
       {/* Before/After cards with flip animation */}
-      <div className="grid grid-cols-4 gap-4">
+      <div data-tour="recovery-metrics" className="grid grid-cols-4 gap-4">
         <BigNumberCard label="Value at Risk" before={initial.valueAtRisk} after={final.valueAtRisk} prefix="$" suffix="M" delay={0.1} />
         <BigNumberCard label="Payments Stuck" before={initial.paymentsStuck} after={final.paymentsStuck} delay={0.2} />
         <BigNumberCard label="MTTR" before={initial.mttrBefore} after={final.mttrAfter} suffix=" min" delay={0.3} />
@@ -209,7 +210,7 @@ export default function RecoveryPage() {
         <h3 className="text-[13px] font-bold text-[#0d9488] uppercase tracking-wider mb-4">
           Business Value Delivered
         </h3>
-        <div className="grid grid-cols-4 gap-6 text-center">
+        <div className="grid grid-cols-5 gap-6 text-center">
           <div>
             <AnimatedCounter value={final.recoveredVolume} className="text-[40px] font-extrabold text-[#0d9488] tabular-nums" />
             <p className="text-[14px] text-[#64748b] mt-1">Payments Recovered</p>
@@ -225,6 +226,13 @@ export default function RecoveryPage() {
           <div>
             <AnimatedCounter value={final.opsHoursSaved} suffix="h" className="text-[40px] font-extrabold text-[#0d9488] tabular-nums" />
             <p className="text-[14px] text-[#64748b] mt-1">Ops Hours Saved</p>
+          </div>
+          <div>
+            <AnimatedCounter
+              value={state.repair.queue.filter((i) => i.status === 'approved' || i.status === 'applied' || i.status === 'verified').length}
+              className="text-[40px] font-extrabold text-[#0d9488] tabular-nums"
+            />
+            <p className="text-[14px] text-[#64748b] mt-1">Exceptions Repaired</p>
           </div>
         </div>
       </motion.div>
@@ -250,6 +258,43 @@ export default function RecoveryPage() {
         </div>
       </div>
 
+      {/* Residual Exceptions */}
+      <div className="glass p-5 border border-[#d97706]/15">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-[15px] font-bold text-[#0f172a]">Residual Exceptions</h3>
+          <Link
+            href="/repair"
+            className="text-[13px] font-semibold text-[#0d9488] hover:underline"
+          >
+            View in Repair Workbench →
+          </Link>
+        </div>
+        <div className="space-y-2">
+          {state.repair.queue.map((item) => (
+            <div key={item.id} className="flex items-center gap-3 text-[13px] py-2 border-b border-[#e2e8f0] last:border-0">
+              <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                item.severity === 'critical' ? 'bg-[#dc2626]/10 text-[#dc2626]' :
+                item.severity === 'high' ? 'bg-[#d97706]/10 text-[#d97706]' :
+                'bg-[#2563eb]/10 text-[#2563eb]'
+              }`}>
+                {item.severity}
+              </span>
+              <span className="font-mono text-[#64748b] w-20">{item.paymentId}</span>
+              <span className="text-[#0f172a] flex-1 truncate">
+                {item.exceptionType.replace(/_/g, ' ')}
+              </span>
+              <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${
+                item.status === 'approved' || item.status === 'applied' ? 'bg-[#0d9488]/10 text-[#0d9488]' :
+                item.status === 'rejected' ? 'bg-[#dc2626]/10 text-[#dc2626]' :
+                'bg-[#2563eb]/10 text-[#2563eb]'
+              }`}>
+                {item.status === 'ai_proposed' ? 'AI Proposed' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Charts row */}
       <div className="grid grid-cols-2 gap-5">
         {/* Recovery curve */}
@@ -264,8 +309,8 @@ export default function RecoveryPage() {
                 contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '14px' }}
                 labelStyle={{ color: '#0f172a' }}
               />
-              <Area type="monotone" dataKey="recovered" stroke="#0d9488" fill="#0d9488" fillOpacity={0.15} strokeWidth={2} name="Recovered" />
-              <Area type="monotone" dataKey="stuck" stroke="#dc2626" fill="#dc2626" fillOpacity={0.1} strokeWidth={2} name="Stuck" />
+              <Area type="monotone" dataKey="recovered" stroke="#0d9488" fill="#0d9488" fillOpacity={0.15} strokeWidth={2} name="Recovered" isAnimationActive={false} />
+              <Area type="monotone" dataKey="stuck" stroke="#dc2626" fill="#dc2626" fillOpacity={0.1} strokeWidth={2} name="Stuck" isAnimationActive={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -283,16 +328,16 @@ export default function RecoveryPage() {
                 labelStyle={{ color: '#0f172a' }}
                 formatter={(value) => [`${value}ms`]}
               />
-              <Line type="monotone" dataKey="sanctions" stroke="#dc2626" strokeWidth={2} dot={false} name="Sanctions" />
-              <Line type="monotone" dataKey="legacy" stroke="#d97706" strokeWidth={2} dot={false} name="Legacy Hub" />
-              <Line type="monotone" dataKey="fx" stroke="#0d9488" strokeWidth={2} dot={false} name="FX" />
+              <Line type="monotone" dataKey="sanctions" stroke="#dc2626" strokeWidth={2} dot={false} name="Sanctions" isAnimationActive={false} />
+              <Line type="monotone" dataKey="legacy" stroke="#d97706" strokeWidth={2} dot={false} name="Legacy Hub" isAnimationActive={false} />
+              <Line type="monotone" dataKey="fx" stroke="#0d9488" strokeWidth={2} dot={false} name="FX" isAnimationActive={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Audit trail */}
-      <div className="glass p-5">
+      <div data-tour="audit-trail" className="glass p-5">
         <h3 className="text-[16px] font-bold text-[#0f172a] mb-4">Compliance Audit Trail</h3>
         <div className="space-y-3">
           {scenario.timeline.map((event, i) => (

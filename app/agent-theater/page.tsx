@@ -77,7 +77,7 @@ export default function AgentTheaterPage() {
       </div>
 
       {/* Agent cards — vertical timeline */}
-      <div className="space-y-3">
+      <div data-tour="agent-cards" className="space-y-3">
         {workflow.steps.map((step) => (
           <AgentCard key={`${step.step_id}-${step.status}`} agent={step} />
         ))}

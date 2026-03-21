@@ -9,8 +9,10 @@ import {
   ScoreboardMetrics,
   DirectorState,
   AuditEntry,
+  RepairState,
+  ExceptionType,
 } from '@/types'
-import { getBankProfile, getScenario, getAgentSteps } from '@/lib/data-loader'
+import { getBankProfile, getScenario, getAgentSteps, getRepairQueue } from '@/lib/data-loader'
 import { WorkflowEngine, INITIAL_SCOREBOARD } from '@/lib/workflow/engine'
 import { PlaybackController } from '@/lib/workflow/playback'
 
@@ -21,6 +23,7 @@ interface AppState {
   workflow: WorkflowState
   scoreboard: ScoreboardMetrics
   director: DirectorState
+  repair: RepairState
 }
 
 // --- Actions ---
@@ -37,6 +40,12 @@ type Action =
   | { type: 'UPDATE_SCOREBOARD'; metrics: Partial<ScoreboardMetrics> }
   | { type: 'JUMP_TO_STEP'; step: number }
   | { type: 'START_WORKFLOW' }
+  | { type: 'SELECT_REPAIR_ITEM'; itemId: string | null }
+  | { type: 'SET_REPAIR_FILTER'; filter: ExceptionType | 'all' }
+  | { type: 'APPROVE_REPAIR'; itemId: string }
+  | { type: 'REJECT_REPAIR'; itemId: string }
+  | { type: 'APPROVE_ALL_REPAIRS' }
+  | { type: 'RESET_REPAIR_QUEUE' }
 
 // --- Context type (must match old AppContextType for backward compat) ---
 interface AppContextType {
@@ -81,6 +90,12 @@ function initState(bankId: BankId): AppState {
       playbackSpeed: 1,
       liveNarration: false,
       apiKeyPresent: false,
+    },
+    repair: {
+      queue: getRepairQueue(bankId),
+      selectedItemId: null,
+      filter: 'all',
+      expandedProposalId: null,
     },
   }
 }
@@ -200,6 +215,74 @@ export const useApp = create<AppContextType>((set, get) => {
           }
           break
         }
+        case 'SELECT_REPAIR_ITEM':
+          set((s) => ({
+            state: { ...s.state, repair: { ...s.state.repair, selectedItemId: action.itemId } },
+          }))
+          break
+        case 'SET_REPAIR_FILTER':
+          set((s) => ({
+            state: { ...s.state, repair: { ...s.state.repair, filter: action.filter, selectedItemId: null } },
+          }))
+          break
+        case 'APPROVE_REPAIR':
+          set((s) => ({
+            state: {
+              ...s.state,
+              repair: {
+                ...s.state.repair,
+                queue: s.state.repair.queue.map((item) =>
+                  item.id === action.itemId
+                    ? { ...item, status: 'approved' as const, approvedBy: 'Ops Manager', approvedAt: new Date().toISOString() }
+                    : item
+                ),
+              },
+            },
+          }))
+          break
+        case 'REJECT_REPAIR':
+          set((s) => ({
+            state: {
+              ...s.state,
+              repair: {
+                ...s.state.repair,
+                queue: s.state.repair.queue.map((item) =>
+                  item.id === action.itemId
+                    ? { ...item, status: 'rejected' as const }
+                    : item
+                ),
+              },
+            },
+          }))
+          break
+        case 'APPROVE_ALL_REPAIRS':
+          set((s) => ({
+            state: {
+              ...s.state,
+              repair: {
+                ...s.state.repair,
+                queue: s.state.repair.queue.map((item) =>
+                  item.status === 'ai_proposed' || item.status === 'human_review'
+                    ? { ...item, status: 'approved' as const, approvedBy: 'Ops Manager (Batch)', approvedAt: new Date().toISOString() }
+                    : item
+                ),
+              },
+            },
+          }))
+          break
+        case 'RESET_REPAIR_QUEUE':
+          set((s) => ({
+            state: {
+              ...s.state,
+              repair: {
+                queue: getRepairQueue(s.state.bank.id),
+                selectedItemId: null,
+                filter: 'all',
+                expandedProposalId: null,
+              },
+            },
+          }))
+          break
       }
     },
 

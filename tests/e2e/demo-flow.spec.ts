@@ -91,6 +91,28 @@ test.describe('Navigation', () => {
   })
 })
 
+test.describe('Guided Tour', () => {
+  test('tour can navigate across screens and recover cleanly', async ({ page }) => {
+    await page.goto('/recovery')
+    await page.getByRole('button', { name: 'Tour' }).click()
+    await expect(page.getByRole('heading', { name: 'Welcome to the Command Center' })).toBeVisible()
+
+    // Advance into payment-trace step where route transition is required.
+    for (let i = 0; i < 8; i++) {
+      await page.getByRole('button', { name: 'Next' }).click()
+      await page.waitForTimeout(120)
+    }
+
+    await expect(page).toHaveURL(/\/payment-trace$/)
+    await expect(page.getByRole('heading', { name: 'Payment Search' })).toBeVisible()
+
+    // Exiting the tour should restore normal page interaction.
+    await page.getByRole('button', { name: 'Skip tour' }).click()
+    await expect(main(page).getByRole('heading', { name: 'Golden Payment Journey Trace' })).toBeVisible()
+  })
+
+})
+
 // ================================================================
 // Command Center (/) Tests
 // ================================================================

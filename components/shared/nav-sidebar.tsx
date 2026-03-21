@@ -11,6 +11,7 @@ const navItems = [
   { href: '/log-intelligence', label: 'Log Intel', icon: '📊' },
   { href: '/hitl-cockpit', label: 'HITL Cockpit', icon: '🛡️' },
   { href: '/recovery', label: 'Recovery', icon: '✅' },
+  { href: '/repair', label: 'Repair', icon: '🔧' },
 ]
 
 export function NavSidebar() {
@@ -20,6 +21,7 @@ export function NavSidebar() {
 
   return (
     <nav
+      data-tour="nav-sidebar"
       className="w-16 h-full flex flex-col items-center py-4 shrink-0 border-r border-[#1e293b]"
       style={{ background: '#0f172a' }}
     >

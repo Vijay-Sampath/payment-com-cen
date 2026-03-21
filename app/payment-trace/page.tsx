@@ -312,7 +312,7 @@ export default function PaymentTracePage() {
         </div>
 
         {/* Search bar */}
-        <div className="mb-4">
+        <div className="mb-4" data-tour="search-bar">
           <input
             type="text"
             placeholder="Search by Payment ID, Originator, Corridor, Status, Currency..."
@@ -323,7 +323,7 @@ export default function PaymentTracePage() {
         </div>
 
         {/* Payment table */}
-        <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+        <div data-tour="payment-table" className="overflow-x-auto max-h-[400px] overflow-y-auto">
           <table className="w-full text-[14px]">
             <thead className="sticky top-0 bg-white z-10">
               <tr className="border-b border-[#e2e8f0]">

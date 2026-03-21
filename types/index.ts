@@ -226,3 +226,6 @@ export interface AppState {
   scoreboard: ScoreboardMetrics
   director: DirectorState
 }
+
+// --- Repair Workbench ---
+export * from './repair'

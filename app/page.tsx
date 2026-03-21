@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '@/lib/store'
 import { CorridorMap } from '@/components/command-center/corridor-map'
@@ -29,6 +30,7 @@ export default function CommandCenterPage() {
         </div>
         {!isActive && (
           <motion.button
+            data-tour="launch-button"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => { startWorkflow(); dispatch({ type: 'SET_AUTOPLAY', enabled: true }) }}
@@ -44,6 +46,7 @@ export default function CommandCenterPage() {
         {isPreIncident && (
           <motion.div
             key="ambient"
+            data-tour="status-banner"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -73,6 +76,7 @@ export default function CommandCenterPage() {
         {isActive && !isResolved && (
           <motion.div
             key="incident"
+            data-tour="status-banner"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -103,6 +107,7 @@ export default function CommandCenterPage() {
         {isResolved && (
           <motion.div
             key="resolved"
+            data-tour="status-banner"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -126,10 +131,10 @@ export default function CommandCenterPage() {
 
       {/* Main grid: 60% map / 40% right panel */}
       <div className="grid grid-cols-5 gap-5" style={{ minHeight: '440px' }}>
-        <div className="col-span-3">
+        <div className="col-span-3" data-tour="corridor-map">
           <CorridorMap />
         </div>
-        <div className="col-span-2 flex flex-col gap-4">
+        <div className="col-span-2 flex flex-col gap-4" data-tour="health-gauges">
           <HealthGauges />
           <StressedServices />
         </div>
@@ -149,6 +154,35 @@ export default function CommandCenterPage() {
           </div>
         ))}
       </div>
+
+      {/* Residual Exceptions — shown after resolution */}
+      {isResolved && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="glass p-4 border border-[#d97706]/20"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-[20px]">🔧</span>
+              <div>
+                <span className="text-[15px] font-bold text-[#0f172a]">Residual Exceptions</span>
+                <p className="text-[13px] text-[#64748b] mt-0.5">
+                  {state.repair.queue.filter((i) => i.status === 'ai_proposed' || i.status === 'human_review').length} exceptions
+                  require AI-assisted repair with maker-checker governance
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/repair"
+              className="px-4 py-2 rounded-lg text-[13px] font-semibold bg-[#0d9488]/10 text-[#0d9488] border border-[#0d9488]/30 hover:bg-[#0d9488]/20 transition-all"
+            >
+              Open Repair Workbench →
+            </Link>
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   )
 }

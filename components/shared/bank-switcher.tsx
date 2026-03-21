@@ -14,7 +14,7 @@ export function BankSwitcher() {
   const { state, switchBank } = useApp()
 
   return (
-    <div className="flex items-center gap-1">
+    <div data-tour="bank-switcher" className="flex items-center gap-1">
       {banks.map((b) => (
         <button
           key={b.id}
