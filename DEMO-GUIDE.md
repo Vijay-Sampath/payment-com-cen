@@ -10,6 +10,7 @@
 |------|--------|
 | **URL** | `http://localhost:3000` |
 | **Director Panel** | `Cmd+Shift+D` (hidden from audience) |
+| **Guided Tour** | "Tour" button in top-right corner of the app |
 | **Demo Duration** | 12-18 minutes (adjustable via speed control) |
 | **No API Key Needed** | Static fallback is ON by default |
 | **Reset** | Director Panel > Reset button, or refresh browser |
@@ -64,7 +65,7 @@ Launch the AI Response. Watch 9 agents detect, analyze, and recommend a fix — 
 **Key line:** *"Nine AI agents. Zero humans paged. The system found the root cause, mapped the blast radius, and generated three ranked remediation options — all before your ops team would have opened their laptop."*
 
 ### Act 3 — "The Resolution" (3-4 min)
-Approve the fix. Watch payments drain. Show the green scoreboard. Present the audit trail.
+Approve the fix. Watch payments drain. Show the green scoreboard. Present the audit trail. Show residual exceptions being repaired in the Repair Workbench.
 
 **Key line:** *"$182M protected. 11 minutes. One human approval. Every decision logged for your examiners. That's what AI-orchestrated resilience looks like."*
 
@@ -169,11 +170,85 @@ Approve the fix. Watch payments drain. Show the green scoreboard. Present the au
 
 **The confetti burst** fires when the workflow reaches "resolved" state. Let it play — it's a celebration moment.
 
+**Scoreboard update:** After resolution, the scoreboard gains an **Exceptions** KPI showing the count of residual payments that need repair review.
+
 **Talking point:** *"Every step is auditable. Every decision has an evidence chain. When your examiner asks what happened — you hand them this."*
+
+### Screen 7: Payment Repair Workbench (`/repair`)
+
+**What the audience sees:** A 3-panel workbench for reviewing and approving AI-proposed repairs to residual exception payments.
+
+This screen is available after resolution, when the scoreboard shows outstanding exceptions.
+
+**The 3-panel layout:**
+- **Left — Exception Queue:** List of residual payments with exception type, severity badge (critical/high/medium/low), and status badges (AI Proposed, Human Review, Approved, Applied, Verified, Rejected)
+- **Center — Proposed Changes / Full Payment Record tabs:**
+  - *Proposed Changes* tab: Field-level diff view showing the original value, AI-proposed value, confidence score, and regulatory source for each change
+  - *Full Payment Record* tab: Complete before/after payment snapshot with all ISO 20022 fields
+- **Right — Agent Reasoning Panel:** Displays the AI's chain of reasoning, regulatory notes, and confidence evidence for the proposed repair
+
+**The Maker-Checker Action Bar** (bottom of center panel) enforces governance patterns:
+- **FOUR_EYES** — requires a second approver sign-off
+- **BATCH_APPROVAL** — approve multiple exceptions at once
+- **AUTONOMOUS_WITH_AUDIT** — AI applies automatically, fully logged
+
+**Exception types shown:**
+- `RJCT08_BIC_INVALID` — invalid BIC code, AI proposes corrected routing
+- `NAMC_NAME_MISMATCH` — beneficiary name discrepancy
+- `RJCT11_ADDRESS_UNSTRUCTURED` — address format non-compliant with ISO 20022
+- `DUPL_DUPLICATE_DETECTED` — potential duplicate payment flagged
+- `ACMT_ACCOUNT_CLOSED` — destination account closed, AI proposes reroute
+- `CURR_CURRENCY_MISMATCH` — currency field inconsistency
+
+**"All Exceptions Resolved" state:** Once all items are approved/rejected, the panel shows a green confirmation card.
+
+**Talking point:** *"After the AI stabilizes the payments flow, there are still residual exceptions — payments that got stuck with data quality issues. The AI proposes exact field-level fixes, with regulatory citations. The human reviews the diff and approves. This is maker-checker governance for the AI age."*
 
 ---
 
-## 4. Director Panel Reference
+## 4. Guided Tour
+
+The app ships with a built-in **16-step guided tour** — ideal for new audiences or self-serve demos.
+
+**How to start:** Click the **"Tour"** button in the top-right corner of the app (next to the bank switcher).
+
+**What the tour covers:**
+
+| Step | What It Shows |
+|------|---------------|
+| Welcome | Intro card — overview of the platform |
+| Navigation Sidebar | 7 screens tour overview |
+| Live Scoreboard | KPI bar — Value at Risk, Payments Stuck, MTTR, STP Rate |
+| Bank Switcher | 4 bank profiles and what changes |
+| Incident Status Banner | Pre-incident / Active / Resolved phases |
+| Payment Corridor Map | Animated corridor arcs |
+| Payment Rail Health | SWIFT/ACH/SEPA/Fedwire/RTP/CHIPS gauges |
+| Launch AI Response | The trigger button |
+| Payment Search | Filter bar on Payment Trace |
+| Payment Table | 142-row table with golden journey trace |
+| Agent Orchestration | 9 agent cards overview |
+| Remediation Options | 3 ranked HITL options |
+| Approve & Execute | Countdown timer + governance gate |
+| Director Panel Access | Hidden control dot |
+| Playback Controls | Step control, speed, reset inside Director Panel |
+| Tour Complete | CTA to start the live demo |
+
+**Tour behavior:**
+- Navigates automatically between screens as steps progress
+- Spotlights the relevant UI element with a dark overlay
+- Supports keyboard navigation: ← → arrow keys, or click Next/Prev
+- Director Panel opens/closes automatically for relevant steps
+- A 2.5-second watchdog prevents navigation from getting stuck
+- Click "End Tour" at any time to exit
+
+**When to use the tour:**
+- For audiences that want to self-explore before the narrated demo
+- As a pre-briefing tool when you can't be present
+- For technical evaluators who want to map the UI to architecture
+
+---
+
+## 5. Director Panel Reference
 
 Open with `Cmd+Shift+D`. This is your hidden control surface — never show it to the audience.
 
@@ -201,11 +276,11 @@ Open with `Cmd+Shift+D`. This is your hidden control surface — never show it t
 | **5 min** (elevator pitch) | 2x | Start on Command Center, click Launch, skip to HITL, approve, show Recovery |
 | **12 min** (standard demo) | 1x | Full flow with autoplay, narrate each agent, pause at HITL |
 | **20 min** (deep dive) | 0.5x | Full flow + Log Intelligence + Payment Trace search + bank switch |
-| **30 min** (workshop) | Manual | Step-by-step with Next button, discuss each agent, show all screens |
+| **30 min** (workshop) | Manual | Step-by-step with Next button, discuss each agent, show all screens including Repair Workbench |
 
 ---
 
-## 5. Bank Switching — Tailoring to the Audience
+## 6. Bank Switching — Tailoring to the Audience
 
 If you know the audience's bank, switch to the closest profile. Each bank changes everything: BIC codes, system names, client names, corridor cities.
 
@@ -221,7 +296,7 @@ If you know the audience's bank, switch to the closest profile. Each bank change
 
 ---
 
-## 6. Handling Questions
+## 7. Handling Questions
 
 ### Technical Questions
 
@@ -231,6 +306,7 @@ If you know the audience's bank, switch to the closest profile. Each bank change
 | *"Does this connect to real payment systems?"* | "This is a demonstration environment with synthetic data. In production, it would connect via APIs to your sanctions service, message queues, and settlement systems." |
 | *"How does the sanctions reroute work?"* | "The Topology Agent verifies a backup sanctions cluster exists in a different region with zero shared dependencies. The Execution Agent redirects the message queue to the backup cluster, drains stuck payments at 47/minute, and monitors until stable." |
 | *"What about false positives?"* | "The Sentinel Agent uses a 96% confidence threshold. The multi-agent chain — detect, correlate, cluster, impact — progressively filters noise. By the time it reaches the human, 41% of retry noise has been eliminated." |
+| *"What happens to residual exceptions after recovery?"* | "The Repair Workbench shows every payment that couldn't be auto-resolved — data quality exceptions, BIC errors, name mismatches. The AI proposes exact field-level corrections with regulatory citations. A human reviews the diff and approves under maker-checker governance." |
 
 ### Executive / Compliance Questions
 
@@ -243,7 +319,7 @@ If you know the audience's bank, switch to the closest profile. Each bank change
 
 ---
 
-## 7. Common Demo Pitfalls
+## 8. Common Demo Pitfalls
 
 | Pitfall | Prevention |
 |---------|------------|
@@ -251,14 +327,16 @@ If you know the audience's bank, switch to the closest profile. Each bank change
 | Talking over the typewriter animation | Let each agent's text finish before narrating |
 | Rushing through the HITL gate | This is the most important moment — pause, explain, let tension build |
 | Forgetting to show the Recovery screen | This is the payoff — always end here |
+| Forgetting to show the Repair Workbench for technical audiences | Navigate to `/repair` after Recovery to show the residual exception workflow |
 | Running autoplay too fast | 1x is the sweet spot. 2x only for <5 min demos |
 | Not naming the clients | "Siemens, Rio Tinto, Merck" resonate more than "3 clients" |
 | Showing the Log Intelligence screen to non-technical audiences | Skip it. Go directly from Agent Theater to HITL Cockpit |
 | Leaving speed at 2x after a bank switch | Reset speed to 1x when switching banks |
+| Starting the Guided Tour during a live demo | Tour is for self-serve / pre-briefing — not for narrated demos. Disable it before the audience arrives. |
 
 ---
 
-## 8. Narrative Script (12-Minute Version)
+## 9. Narrative Script (12-Minute Version)
 
 ### Opening (1 min)
 > "What you're looking at is an AI-operated command center for a global payments estate. Right now, everything is green. Six payment rails — SWIFT, ACH, SEPA, Fedwire, RTP, CHIPS — all healthy. Four corridors flowing: New York to London, New York to Tokyo, Charlotte to Singapore, London to Hong Kong. STP rate at 71%. AI Resilience Score: 98 out of 100."
@@ -299,6 +377,19 @@ If you know the audience's bank, switch to the closest profile. Each bank change
 > "Value at Risk: $182M down to $12M. Payments Stuck: 1,247 down to 3. MTTR: 90 minutes down to 11. STP Rate: 71% restored to 98%."
 >
 > "847 investigations avoided. 72 ops hours saved. And every single step — every agent decision, every piece of evidence, the human approval — it's all in this audit trail. When your examiner asks what happened, you hand them this."
+>
+> "But we're not done. There are still residual exceptions — payments with data issues that couldn't auto-resolve. Let me show you how the AI handles those."
+
+### Repair Workbench (1-2 min — optional, for technical/ops audiences)
+> *Navigate to Repair Workbench*
+>
+> "These are the payments that got stuck due to data quality issues — invalid BIC codes, name mismatches, address format violations. The AI has already proposed exact field-level fixes. Watch — I click on this exception, and I see the original value, the AI's proposed correction, the confidence score, and the regulatory standard it's citing."
+>
+> "The maker-checker bar at the bottom enforces your governance pattern: four-eyes approval, batch sign-off, or fully autonomous with a full audit trail."
+>
+> *Click Approve on one exception*
+>
+> "Approved. Applied. Verified. Every action is in the audit log."
 
 ### Close (1 min)
 > "This is what AI-orchestrated payments resilience looks like. Not replacing humans — augmenting them. The AI finds, analyzes, and recommends. The human decides. And the entire process — from detection to resolution — takes 11 minutes instead of 90."
@@ -309,9 +400,10 @@ If you know the audience's bank, switch to the closest profile. Each bank change
 
 ---
 
-## 9. Post-Demo Actions
+## 10. Post-Demo Actions
 
 - [ ] Export the audit trail: Director Panel > Export Audit CSV
 - [ ] Share the demo URL if the audience wants to explore
+- [ ] Suggest the Guided Tour for self-serve exploration (`http://localhost:3000` → click "Tour")
 - [ ] Reset the demo for the next session: Director Panel > Hard Reset Demo
 - [ ] Note any questions that came up — feed them back to the product team
